@@ -1,4 +1,4 @@
-package com.azhar.mapdirection;
+package com.mozarik.modullima;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -52,45 +53,43 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Spinner spinnerCari = findViewById(R.id.spnCari);
         pBar = findViewById(R.id.pBar);
 
+        //set zoom-in-out button pada map
+        GoogleMapOptions options=new GoogleMapOptions()
+                .zoomControlsEnabled(true);
+
+        //XML Fragment Map
         SupportMapFragment fragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         fragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 mGoogleMap = googleMap;
+                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                mGoogleMap.getUiSettings().setMapToolbarEnabled(true);
                 initMap();
             }
         });
 
+        //Array Adapter untuk Dropdown list.
         ArrayAdapter<String> myAdapter = new ArrayAdapter<>(MainActivity.this,
                 android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.cari_tempat));
+
         myAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCari.setAdapter(myAdapter);
         spinnerCari.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
 
-                //daftar pilihan spinner
+                //daftar pilihan dropdown
                 String xType = "";
                 if (position == 1)
-                    xType = "mosque";
-                else if (position == 2)
                     xType = "restaurant";
-                else if (position == 3)
+                else if (position == 2)
                     xType = "atm";
+                else if (position == 3)
+                    xType = "school";
                 else if (position == 4)
                     xType = "bank";
-                else if (position == 5)
-                    xType = "school";
-                else if (position == 6)
-                    xType = "hospital";
-                else if (position == 7)
-                    xType = "laundry";
-                else if (position == 8)
-                    xType = "university";
-                else if (position == 9)
-                    xType = "post_office";
-                else if (position == 10)
-                    xType = "police";
                 if (position != 0) {
 
                     //place API
@@ -133,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 onLocationChanged(location);
             } else
                 stopProg();
-            locationManager.requestLocationUpdates(provider, 20000, 0, this);
+            locationManager.requestLocationUpdates(provider, 500000, 0, this);
         }
     }
 
@@ -142,14 +141,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         mLatitude = location.getLatitude();
         mLongitude = location.getLongitude();
         LatLng latLng = new LatLng(mLatitude, mLongitude);
-        /*Circle circle = mGoogleMap.addCircle(new CircleOptions()
-                .center(new LatLng(mLatitude, mLongitude))
-                .radius(500)
-                .strokeWidth(6)
-                .strokeColor(0xffff0000)
-                .fillColor(0x55ff0000));*/
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(10));
         stopProg();
     }
 
@@ -174,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
             return data;
         }
+
 
         @Override
         protected void onPostExecute(String result) {
@@ -210,6 +204,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         return data;
     }
 
+
+    //Async the for loop
     @SuppressLint("StaticFieldLeak")
     private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String, String>>> {
         JSONObject jObject;
@@ -228,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             return places;
         }
 
-        //untuk menampilkan jumlah lokasi terdekat
+        // Loop Nearest Placest
         @Override
         protected void onPostExecute(List<HashMap<String, String>> list) {
             mGoogleMap.clear();
